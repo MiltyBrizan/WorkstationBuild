@@ -42,6 +42,7 @@ read -rp "  Google Cloud CLI        [y/N] " OPT_GCLOUD
 read -rp "  Cursor (AI code editor) [y/N] " OPT_CURSOR
 read -rp "  ChatGPT Desktop         [y/N] " OPT_CHATGPT
 read -rp "  Docker Desktop          [y/N] " OPT_DOCKER
+read -rp "  GitHub CLI (gh)         [y/N] " OPT_GH
 read -rp "  AWS CLI                 [y/N] " OPT_AWSCLI
 read -rp "  Node.js dev tools       [y/N] " OPT_NODE_TOOLS
 read -rp "  React.js tooling        [y/N] " OPT_REACT
@@ -201,6 +202,13 @@ brew install python
 ok "$(python3 --version)"
 warn "Use 'python3' and 'pip3' — never touch the system Python"
 
+# ── GitHub CLI ───────────────────────────────────────────────────────────────
+if confirm "$OPT_GH"; then
+  step "GitHub CLI"
+  brew install gh
+  ok "gh $(gh --version | head -1 | awk '{print $3}') installed — run 'gh auth login' to authenticate"
+fi
+
 # ── AWS CLI ──────────────────────────────────────────────────────────────────
 if confirm "$OPT_AWSCLI"; then
   step "AWS CLI"
@@ -324,6 +332,7 @@ echo "  • Oh My Zsh"
 echo "  • Yarn $(yarn --version)"
 confirm "$OPT_ITERM2"      && echo "  • iTerm2"
 confirm "$OPT_ALFRED"      && echo "  • Alfred"
+confirm "$OPT_GH"          && echo "  • GitHub CLI $(gh --version 2>/dev/null | head -1 | awk '{print $3}')"
 confirm "$OPT_AWSCLI"      && echo "  • AWS CLI $(aws --version 2>&1 | awk '{print $1}')"
 confirm "$OPT_NODE_TOOLS"  && echo "  • TypeScript $(tsc --version 2>/dev/null || echo ''), ESLint, Prettier"
 confirm "$OPT_REACT"       && echo "  • Vite $(vite --version 2>/dev/null || echo '')"
@@ -338,7 +347,8 @@ confirm "$OPT_REDIS"       && echo "  • Redis"
 echo ""
 echo "Next steps:"
 echo "  1. Restart Terminal (or: source ~/.zshrc)"
-confirm "$OPT_AWSCLI"  && echo "  2. Run: aws configure  (set Access Key, Secret, region, output)"
+confirm "$OPT_GH"      && echo "  2. Run: gh auth login"
+confirm "$OPT_AWSCLI"  && echo "  3. Run: aws configure  (set Access Key, Secret, region, output)"
 confirm "$OPT_GCLOUD"  && echo "  3. Run: gcloud init"
 confirm "$OPT_REACT"   && echo "  4. Scaffold a React app: npm create vite@latest"
 confirm "$OPT_DOCKER"  && echo "  5. Launch Docker Desktop from Applications"
