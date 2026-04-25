@@ -92,8 +92,12 @@ ok "Homebrew is up to date"
 
 # ── Git ───────────────────────────────────────────────────────────────────────
 step "Git"
-brew install git
-ok "$(git --version)"
+if brew list git &>/dev/null 2>&1; then
+  ok "Already installed ($(git --version))"
+else
+  brew install git
+  ok "$(git --version)"
+fi
 
 git config --global user.name  "$GIT_NAME"
 git config --global user.email "$GIT_EMAIL"
@@ -154,15 +158,23 @@ ok "Global .gitignore created at ~/.gitignore_global"
 # ── iTerm2 ───────────────────────────────────────────────────────────────────
 if confirm "$OPT_ITERM2"; then
   step "iTerm2"
-  brew install --cask iterm2
-  ok "iTerm2 installed — set as default terminal in iTerm2 > Make iTerm2 Default Term"
+  if [[ -d "/Applications/iTerm.app" ]]; then
+    ok "Already installed"
+  else
+    brew install --cask iterm2
+    ok "iTerm2 installed — set as default terminal in iTerm2 > Make iTerm2 Default Term"
+  fi
 fi
 
 # ── Alfred ────────────────────────────────────────────────────────────────────
 if confirm "$OPT_ALFRED"; then
   step "Alfred"
-  brew install --cask alfred
-  ok "Alfred installed — launch it and grant Accessibility permissions to activate"
+  if [[ -d "/Applications/Alfred.app" ]] || [[ -d "/Applications/Alfred 5.app" ]]; then
+    ok "Already installed"
+  else
+    brew install --cask alfred
+    ok "Alfred installed — launch it and grant Accessibility permissions to activate"
+  fi
 fi
 
 # ── VS Code ───────────────────────────────────────────────────────────────────
@@ -188,76 +200,130 @@ fi
 
 # ── Node.js ───────────────────────────────────────────────────────────────────
 step "Node.js"
-brew install node
-ok "Node $(node -v) / npm $(npm -v)"
+if command -v node &>/dev/null; then
+  ok "Already installed (Node $(node -v) / npm $(npm -v))"
+else
+  brew install node
+  ok "Node $(node -v) / npm $(npm -v)"
+fi
 
 # ── Claude Code ───────────────────────────────────────────────────────────────
 step "Claude Code"
-npm install -g @anthropic-ai/claude-code
-ok "Claude Code installed: $(claude --version 2>/dev/null || echo 'run claude to verify')"
+if command -v claude &>/dev/null; then
+  ok "Already installed ($(claude --version 2>/dev/null || echo 'run claude to verify'))"
+else
+  npm install -g @anthropic-ai/claude-code
+  ok "Claude Code installed: $(claude --version 2>/dev/null || echo 'run claude to verify')"
+fi
 
 # ── Python 3 ─────────────────────────────────────────────────────────────────
 step "Python 3"
-brew install python
-ok "$(python3 --version)"
+if brew list python &>/dev/null 2>&1; then
+  ok "Already installed ($(python3 --version))"
+else
+  brew install python
+  ok "$(python3 --version)"
+fi
 warn "Use 'python3' and 'pip3' — never touch the system Python"
 
 # ── GitHub CLI ───────────────────────────────────────────────────────────────
 if confirm "$OPT_GH"; then
   step "GitHub CLI"
-  brew install gh
-  ok "gh $(gh --version | head -1 | awk '{print $3}') installed — run 'gh auth login' to authenticate"
+  if command -v gh &>/dev/null; then
+    ok "Already installed (gh $(gh --version | head -1 | awk '{print $3}'))"
+  else
+    brew install gh
+    ok "gh $(gh --version | head -1 | awk '{print $3}') installed — run 'gh auth login' to authenticate"
+  fi
 fi
 
 # ── AWS CLI ──────────────────────────────────────────────────────────────────
 if confirm "$OPT_AWSCLI"; then
   step "AWS CLI"
-  brew install awscli
-  ok "AWS CLI $(aws --version 2>&1 | awk '{print $1}') installed — run 'aws configure' to set credentials"
+  if command -v aws &>/dev/null; then
+    ok "Already installed ($(aws --version 2>&1 | awk '{print $1}'))"
+  else
+    brew install awscli
+    ok "AWS CLI $(aws --version 2>&1 | awk '{print $1}') installed — run 'aws configure' to set credentials"
+  fi
 fi
 
 # ── Node.js dev tools ─────────────────────────────────────────────────────────
 if confirm "$OPT_NODE_TOOLS"; then
   step "Node.js dev tools (TypeScript, ESLint, Prettier)"
-  npm install -g typescript ts-node eslint prettier
-  ok "TypeScript $(tsc --version)"
-  ok "ESLint $(eslint --version)"
-  ok "Prettier $(prettier --version)"
+  if command -v tsc &>/dev/null; then
+    ok "TypeScript already installed ($(tsc --version))"
+  else
+    npm install -g typescript ts-node
+    ok "TypeScript $(tsc --version)"
+  fi
+  if command -v eslint &>/dev/null; then
+    ok "ESLint already installed ($(eslint --version))"
+  else
+    npm install -g eslint
+    ok "ESLint $(eslint --version)"
+  fi
+  if command -v prettier &>/dev/null; then
+    ok "Prettier already installed ($(prettier --version))"
+  else
+    npm install -g prettier
+    ok "Prettier $(prettier --version)"
+  fi
 fi
 
 # ── React.js tooling ──────────────────────────────────────────────────────────
 if confirm "$OPT_REACT"; then
   step "React.js tooling (Vite)"
-  npm install -g vite
-  ok "Vite $(vite --version) installed — scaffold a new React project with: npm create vite@latest"
+  if command -v vite &>/dev/null; then
+    ok "Already installed (Vite $(vite --version))"
+  else
+    npm install -g vite
+    ok "Vite $(vite --version) installed — scaffold a new React project with: npm create vite@latest"
+  fi
 fi
 
 # ── Google Cloud CLI ─────────────────────────────────────────────────────────
 if confirm "$OPT_GCLOUD"; then
   step "Google Cloud CLI"
-  brew install --cask google-cloud-sdk
-  ok "gcloud installed — run 'gcloud init' to authenticate"
+  if command -v gcloud &>/dev/null; then
+    ok "Already installed ($(gcloud --version | head -1))"
+  else
+    brew install --cask google-cloud-sdk
+    ok "gcloud installed — run 'gcloud init' to authenticate"
+  fi
 fi
 
 # ── Cursor ────────────────────────────────────────────────────────────────────
 if confirm "$OPT_CURSOR"; then
   step "Cursor"
-  brew install --cask cursor
-  ok "Cursor installed — sign in to activate AI features"
+  if [[ -d "/Applications/Cursor.app" ]]; then
+    ok "Already installed"
+  else
+    brew install --cask cursor
+    ok "Cursor installed — sign in to activate AI features"
+  fi
 fi
 
 # ── ChatGPT Desktop ───────────────────────────────────────────────────────────
 if confirm "$OPT_CHATGPT"; then
   step "ChatGPT Desktop"
-  brew install --cask chatgpt
-  ok "ChatGPT Desktop installed (requires macOS 14 Sonoma + Apple Silicon)"
+  if [[ -d "/Applications/ChatGPT.app" ]]; then
+    ok "Already installed"
+  else
+    brew install --cask chatgpt
+    ok "ChatGPT Desktop installed (requires macOS 14 Sonoma + Apple Silicon)"
+  fi
 fi
 
 # ── Docker Desktop ────────────────────────────────────────────────────────────
 if confirm "$OPT_DOCKER"; then
   step "Docker Desktop"
-  brew install --cask docker
-  ok "Docker Desktop installed — launch it from Applications to finish setup"
+  if [[ -d "/Applications/Docker.app" ]]; then
+    ok "Already installed"
+  else
+    brew install --cask docker
+    ok "Docker Desktop installed — launch it from Applications to finish setup"
+  fi
 fi
 
 # ── Oh My Zsh ─────────────────────────────────────────────────────────────────
@@ -273,40 +339,60 @@ fi
 
 # ── Yarn ─────────────────────────────────────────────────────────────────────
 step "Yarn"
-brew install yarn
-ok "Yarn $(yarn --version)"
+if command -v yarn &>/dev/null; then
+  ok "Already installed (Yarn $(yarn --version))"
+else
+  brew install yarn
+  ok "Yarn $(yarn --version)"
+fi
 
 # ── pnpm ─────────────────────────────────────────────────────────────────────
 if confirm "$OPT_PNPM"; then
   step "pnpm"
-  brew install pnpm
-  ok "pnpm $(pnpm --version)"
+  if command -v pnpm &>/dev/null; then
+    ok "Already installed (pnpm $(pnpm --version))"
+  else
+    brew install pnpm
+    ok "pnpm $(pnpm --version)"
+  fi
 fi
 
 # ── asdf ─────────────────────────────────────────────────────────────────────
 if confirm "$OPT_ASDF"; then
   step "asdf (universal version manager)"
-  brew install asdf
-  ASDF_INIT='. "$(brew --prefix asdf)/libexec/asdf.sh"'
-  if ! grep -qF 'asdf.sh' "$HOME/.zshrc" 2>/dev/null; then
-    echo "$ASDF_INIT" >> "$HOME/.zshrc"
+  if command -v asdf &>/dev/null; then
+    ok "Already installed ($(asdf --version))"
+  else
+    brew install asdf
+    ASDF_INIT='. "$(brew --prefix asdf)/libexec/asdf.sh"'
+    if ! grep -qF 'asdf.sh' "$HOME/.zshrc" 2>/dev/null; then
+      echo "$ASDF_INIT" >> "$HOME/.zshrc"
+    fi
+    ok "asdf installed — add plugins with: asdf plugin add <name>"
   fi
-  ok "asdf installed — add plugins with: asdf plugin add <name>"
 fi
 
 # ── Databases ─────────────────────────────────────────────────────────────────
 if confirm "$OPT_POSTGRES"; then
   step "PostgreSQL"
-  brew install postgresql@16
-  brew services start postgresql@16
-  ok "PostgreSQL 16 installed and started"
+  if brew list postgresql@16 &>/dev/null 2>&1; then
+    ok "Already installed"
+  else
+    brew install postgresql@16
+    brew services start postgresql@16
+    ok "PostgreSQL 16 installed and started"
+  fi
 fi
 
 if confirm "$OPT_REDIS"; then
   step "Redis"
-  brew install redis
-  brew services start redis
-  ok "Redis installed and started"
+  if brew list redis &>/dev/null 2>&1; then
+    ok "Already installed"
+  else
+    brew install redis
+    brew services start redis
+    ok "Redis installed and started"
+  fi
 fi
 
 # ── Cleanup ───────────────────────────────────────────────────────────────────
